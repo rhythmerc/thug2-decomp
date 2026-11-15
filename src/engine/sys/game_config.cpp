@@ -95,7 +95,12 @@ bool argument_starts_with(const char* argument, const char* option)
     if (std::strlen(argument) < length) {
         return false;
     }
-    copy_string(copy.data(), argument);
+    // NOT ORIGINAL - only the option's length of the argument is copied (the original strcpy'd all of it into its
+    // 100 bytes: a longer word - a long path as the program's name - wrote past them); an option that long can't fit.
+    if (length >= copy.size()) {
+        return false;
+    }
+    std::memcpy(copy.data(), argument, length);
     core::at(copy, length) = '\0';
     return std::strcmp(copy.data(), option) == 0;
 }
