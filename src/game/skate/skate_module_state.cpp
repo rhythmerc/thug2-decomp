@@ -2,6 +2,7 @@
 // game type, the level asked for / opened / changed, the preferences, the script commands that drive them.
 
 #include "game/skate/skate_module.h"
+#include "engine/ext/extension.h"
 #include "engine/net/net_lists.h"
 #include <windows.h>
 
@@ -227,7 +228,12 @@ void Skate::start_callback()
     script::launch_script(kNetworkDriverStartup, nullptr, nullptr, false, nullptr);
     script::launch_script(kInitLoadingBar, nullptr, nullptr, false, nullptr);
     script::launch_script(kStartupLoadingScreen, nullptr, nullptr, false, nullptr);
-    Sleep(kStartupPauseMs);
+    // NOT ORIGINAL - the start-up loading screen's pause left out while an extension skips the start-up's show
+    // (ext::skips_intro_movies: the intro movies, and with them this hold on the first loading screen - a host stepping
+    // the game headless shows neither). Original behaviour: always the 2 s pause.
+    if (!ext::skips_intro_movies()) {
+        Sleep(kStartupPauseMs);
+    }
     if (!audio::music_off_requested() || !audio::streams_off()) {
         audio::prepare_all();
     }
