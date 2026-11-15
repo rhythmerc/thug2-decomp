@@ -75,7 +75,7 @@ std::string game_folder_path(const char* file_name)
 {
     std::array<char, MAX_PATH> path{};
     GetModuleFileNameA(nullptr, path.data(), MAX_PATH);
-    if (const size_t slash = std::string_view(path.data()).rfind('\\'); slash != std::string_view::npos) {
+    if (const size_t slash = std::string_view(path.data()).find_last_of("\\/"); slash != std::string_view::npos) {
         core::at(path, slash + 1) = '\0';
     }
     return std::string(path.data()) + file_name;

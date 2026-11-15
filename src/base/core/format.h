@@ -111,7 +111,9 @@ void format_ends_inside_a_conversion();
 
 // The size an integer conversion's length modifier names (0: none given - int).
 constexpr size_t kIntSize = 4;
-constexpr size_t kLongSize = 4; // (32 bits, as on Windows - the game's printf)
+// (32 bits on Windows, as the game's printf reads it. NOT ORIGINAL - off Windows a long argument is 64 bits; the
+// formatter still reads %l as 32 bits (format.cpp), so a long is accepted there and masked)
+constexpr size_t kLongSize = sizeof(long);
 constexpr size_t kLongLongSize = 8;
 
 constexpr bool is_integer(ArgKind kind) { return kind == ArgKind::kSigned || kind == ArgKind::kUnsigned; }

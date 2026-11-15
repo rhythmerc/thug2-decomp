@@ -37,7 +37,7 @@ void prepare_all()
 {
     GetModuleFileNameA(nullptr, platform_config_state().executable_directory_.data(), kPathLength);
     // up to the last backslash
-    if (const size_t slash = std::string_view(platform_config_state().executable_directory_.data()).rfind('\\');
+    if (const size_t slash = std::string_view(platform_config_state().executable_directory_.data()).find_last_of("\\/");
         slash != std::string_view::npos) {
         core::at(platform_config_state().executable_directory_, slash + 1) = '\0';
     }

@@ -57,7 +57,7 @@ constexpr std::size_t kPortControlsBytes = 0x130;
 static_assert(offsetof(PortControls, joystick) == kPortControlsJoystickOffset && offsetof(PortControls, gamepad) == kPortControlsGamepadOffset &&
                   offsetof(PortControls, mouse) == kPortControlsMouseOffset && sizeof(PortControls) == kPortControlsBytes,
               "layout must match the original");
-inline std::array<PortControls, kPorts>& get_controls();
+std::array<PortControls, kPorts>& get_controls();
 
 // The graphics options (0x007D6434; the registry's "options", "distance" and "resolution" - PartyMod's
 // [Graphics] in thug2-decomp.ini, engine/gfx/settings.h).

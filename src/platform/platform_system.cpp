@@ -57,6 +57,9 @@ const std::array<int, 89> kSteps = {{7,     8,     9,     10,    11,    12,    1
 
 } // namespace
 
+// NOT ORIGINAL - the CD drive and the Win32 window are Windows' alone: a build for another system (the headless
+// Linux build) has the rest - the ADPCM decoder and the unswizzle.
+#if defined(_WIN32)
 // 0x005F5740
 char find_cd_drive(const char* volume)
 {
@@ -139,6 +142,8 @@ HWND create_game_window(const char* class_name, const char* title, maths::PixelP
     return CreateWindowExA(ex_style, class_name, title, style, x, y, frame_width, frame_height, nullptr, nullptr, instance,
                            nullptr);
 }
+
+#endif // _WIN32
 
 // 0x005F5A20
 void decode_adpcm(std::span<int16_t> out, std::span<const uint8_t> in)
