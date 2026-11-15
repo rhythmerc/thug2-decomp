@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <concepts>
 #include <type_traits>
 
 // NOT ORIGINAL - the checked downcast. The game's class hierarchies dispatch on their own type tags (an object's type,
