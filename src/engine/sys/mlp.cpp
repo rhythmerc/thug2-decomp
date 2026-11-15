@@ -441,7 +441,9 @@ void Hub::get_main_loop()
         if (pace.flat_out) {
             frame_start = now;
         }
-        if (pace.skip_draw) {
+        // (not original - pose_without_draw: suppressed after the logic tasks instead, so they still pose skeletons)
+        const bool suppress_after_logic = pace.skip_draw && pace.pose_without_draw;
+        if (pace.skip_draw && !suppress_after_logic) {
             render::engine_parts().set_suppress_draw(true);
         }
 
@@ -478,6 +480,9 @@ void Hub::get_main_loop()
             run_tasks(logic_tasks_, profiling_ != 0);
         } else {
             ext::held_frame();
+        }
+        if (suppress_after_logic) { // (not original - pose_without_draw)
+            render::engine_parts().set_suppress_draw(true);
         }
         // (not original: the tick's frame blended by how far into the tick it is drawn - max_fps above)
         blend.alpha = blend.on ? frame_pacing::blend_alpha(counter_now(), tick_time, frame_ticks) : 1.0F;

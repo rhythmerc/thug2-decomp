@@ -62,6 +62,9 @@ struct LoopPace {
     bool hold = false;
     bool flat_out = false;
     bool skip_draw = false;
+    // NOT ORIGINAL - with skip_draw: the frame's animation still posed (rendering is suppressed only after the logic
+    // tasks, so the blend makes each skeleton's matrices - a host that draws the skater itself reads them).
+    bool pose_without_draw = false;
 };
 
 // A section of the screenshot key's sidecar that an extension adds (title, then key / value lines).
