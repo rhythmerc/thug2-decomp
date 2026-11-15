@@ -227,12 +227,17 @@ void SkaterPhysicsModule::kick_off_point_rail(const maths::Vec4* point, bool fro
     kick.y = static_cast<float>(std::sin(angle));
     kick.z = static_cast<float>(along.z * cosine);
 
-    script::Struct* script = level_nodes::fetch_vertex(rail_.node->label(), true);
-    script->read_hash_value(kName, &rail_.script_node, 1);
-    static_cast<objects::MoveExecutor*>(trick_)->pass_to_trick_objects(rail_.script_node);
+    // NOT ORIGINAL - rails without level nodes (a rail manager with no node array: rails a host gives, the headless
+    // build's) have no node script to read: as core_rail.cpp and core_states.cpp already check. Original behaviour: the
+    // node's script read unconditionally (every rail came from the level's nodes).
     uint32_t trigger_script = 0;
-    if (script->read_hash_value(kTriggerScript, &trigger_script, 0)) {
-        trigger_rail_node(kGrindEvents);
+    if (rail_.manager->node_array()) {
+        script::Struct* script = level_nodes::fetch_vertex(rail_.node->label(), true);
+        script->read_hash_value(kName, &rail_.script_node, 1);
+        static_cast<objects::MoveExecutor*>(trick_)->pass_to_trick_objects(rail_.script_node);
+        if (script->read_hash_value(kTriggerScript, &trigger_script, 0)) {
+            trigger_rail_node(kGrindEvents);
+        }
     }
     onto_rail(point, false);
     set_rail_terrain();
