@@ -1,6 +1,8 @@
 #pragma once
 
 #include <charconv>
+
+#include "base/core/float_chars.h"
 #include <climits>
 #include <cstring>
 #include <limits>
@@ -91,9 +93,9 @@ inline double to_double(const char* text) noexcept
     };
     if (char_at(first, 0) == '0' && (char_at(first, 1) == 'x' || char_at(first, 1) == 'X') &&
         (is_hex_digit(2) || (char_at(first, 2) == '.' && is_hex_digit(3)))) {
-        read = std::from_chars(number_detail::begin_of(first.substr(2)), last, value, std::chars_format::hex);
+        read = core::float_from_chars(number_detail::begin_of(first.substr(2)), last, value, std::chars_format::hex);
     } else {
-        read = std::from_chars(number_detail::begin_of(first), last, value, std::chars_format::general);
+        read = core::float_from_chars(number_detail::begin_of(first), last, value, std::chars_format::general);
     }
     if (read.ec == std::errc::invalid_argument) {
         return 0.0;

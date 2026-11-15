@@ -109,7 +109,17 @@ int get_clamped(int vblanks)
 } // namespace
 
 // 0x005BE6F0
-uint64_t read_cpu_time_stamp() { return __rdtsc(); }
+uint64_t read_cpu_time_stamp()
+{
+#if defined(__aarch64__)
+    // NOT ORIGINAL - arm64 has no rdtsc: its virtual counter (kept, never read as a rate)
+    uint64_t ticks = 0;
+    asm volatile("mrs %0, cntvct_el0" : "=r"(ticks));
+    return ticks;
+#else
+    return __rdtsc();
+#endif
+}
 
 // 0x005BE9B0
 void get_reset()

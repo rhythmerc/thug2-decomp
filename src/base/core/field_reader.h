@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <bit>
 #include <charconv>
+
+#include "base/core/float_chars.h"
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -250,8 +252,8 @@ private:
     static float to_float(std::string_view number, bool hex) noexcept
     {
         float value = 0.0F;
-        if (std::from_chars(number_detail::begin_of(number), number_detail::end_of(number), value,
-                            hex ? std::chars_format::hex : std::chars_format::general)
+        if (core::float_from_chars(number_detail::begin_of(number), number_detail::end_of(number), value,
+                                   hex ? std::chars_format::hex : std::chars_format::general)
                 .ec != std::errc::result_out_of_range) {
             return value;
         }
