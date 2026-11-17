@@ -55,6 +55,30 @@ constexpr std::array<std::array<float, 4>, 5> kUberFrigOffsets = {{
 int state_of(skater::SkaterPhysicsModule* core) { return core->state()->cur_phase(); }
 void change_phase(skater::SkaterPhysicsModule* core, int state) { core->set_physics_state(state); }
 
+// NOT ORIGINAL (keep_above_ground): how far past a two-sided wall's plane its back face is looked for, and the ground
+// feeler made again from.
+constexpr float kPastWall = 0.1F;
+
+// NOT ORIGINAL (keep_above_ground): the core's feeler hit the far side of a two-sided wall from `feet` - a wall face
+// (not skatable, not vert) the feet are behind, with a face in the same plane (within kPastWall) facing the other way.
+bool far_side_of_two_sided_wall(skater::SkaterPhysicsModule* core, const maths::Vec4& feet)
+{
+    if (core->feelers().hit_wall == 0U) {
+        return false;
+    }
+    const maths::Vec4 point = core->feeler().contact_pos();
+    const maths::Vec4 normal = core->feeler().surface_dir();
+    if (!(maths::dot_vec(feet - point, normal) < 0.0F)) {
+        return false;
+    }
+    render::ProbeRay twin;
+    twin.line().start = point - kPastWall * normal;
+    twin.line().end = point + kPastWall * normal;
+    const bool two_sided = twin.get_hit_shape(true, false) != 0 && maths::dot_vec(twin.surface_dir(), normal) < 0.0F;
+    twin.entity().get_release();
+    return two_sided;
+}
+
 } // namespace
 
 // Standing on a moving object (on the ground or in the air, not skitching nor wallriding) that isn't what the
@@ -120,7 +144,20 @@ void RiderPhysicsTweaks::keep_above_ground()
     auto* physics = core;
     const park_editing::ParkBuilderMode* park_editor = park_editing::ParkBuilderMode::sole();
 
-    if (!physics->feelers().probe_touches_zone(render::kDefaultIgnoredFaceFlags, render::kNoFaceFlags)) {
+    bool ground = physics->feelers().probe_touches_zone(render::kDefaultIgnoredFaceFlags, render::kNoFaceFlags);
+    // NOT ORIGINAL: hosts (thug2-headless) feed a two-sided wall as two faces in one plane, one facing each way. Under
+    // a wall overhanging the skater the feeler starts (8 up) behind it and comes down onto its back face, which faces
+    // up a little: the skater was lifted onto the wall's plane below ("kept just over the ground"), rose through the
+    // wall from there and landed on its back face - behind the wall. A wall face the feet are behind, with a face in
+    // its plane facing the other way (far_side_of_two_sided_wall), is passed over and the feeler made again from
+    // kPastWall beyond it.
+    if (ground && far_side_of_two_sided_wall(core, position)) {
+        maths::Vec4 down = end - start;
+        down.make_unit();
+        start = core->feeler().contact_pos() + kPastWall * down;
+        ground = physics->feelers().probe_touches_zone(render::kDefaultIgnoredFaceFlags, render::kNoFaceFlags);
+    }
+    if (!ground) {
         // Nothing at all: the uber frig (not in the park editor's play while in states 3 / 4): back where the frame
         // began (a little off it each try), going the other way; out of the air states, into the air.
         int state = state_of(core);
