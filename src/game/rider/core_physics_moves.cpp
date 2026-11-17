@@ -6,6 +6,8 @@
 
 #include <cmath>
 #include <cstdint>
+
+#include "engine/sys/frame_blend.h"
 #include <initializer_list>
 #include <array>
 
@@ -394,6 +396,9 @@ void SkaterPhysicsModule::turn_round_if_backwards()
     display_facing = -display_facing;
     maths::Vec4& display_right = core::at(ground_.display_matrix.row, 0);
     display_right = -display_right;
+    if (object->is_local_skater() != 0U) {
+        frame_blend::note_skater_placed(); // (not original: turned round at once - nothing blended across it)
+    }
     if (script::fetch_int_value(kNoTurnRoundScript) == 0) {
         script::launch_script(kTurnRoundScript, nullptr, static_cast<objects::Entity*>(object_of(this)), false,
                               nullptr);

@@ -17,6 +17,7 @@ struct BlendState {
     Frame frame;
     bool cut = false;
     uint64_t cuts = 0;
+    uint64_t skater_placements = 0;
     int max_fps = frame_pacing::kOriginal;
     frame_pacing::PresentMode present = frame_pacing::PresentMode::kVsync;
 };
@@ -40,6 +41,10 @@ void note_cut()
 }
 
 uint64_t cuts() { return blend_state().cuts; }
+
+void note_skater_placed() { ++blend_state().skater_placements; }
+
+uint64_t skater_placements() { return blend_state().skater_placements; }
 
 bool take_cut()
 {

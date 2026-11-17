@@ -3,6 +3,8 @@
 #include "game/rider/flip_and_rotate.h"
 
 #include <cstdint>
+
+#include "engine/sys/frame_blend.h"
 #include <gsl/pointers>
 #include <array>
 
@@ -123,6 +125,9 @@ void RiderSpinAndFlip::apply_flip_to_anims()
     net::Guest* app = client_app(get_skater_index(entity()));
     auto* state = core::down_cast<objects::RiderPoseState>(entity()->fetch_module(kSkaterState));
     flip_anims(anim_blender_, entity()->ident(), state->flag(PoseFlag::kFlipped).on, app_value8(app), 1);
+    if (entity()->is_local_skater() != 0U) {
+        frame_blend::note_skater_placed(); // (not original: every animation mirrored at once - the bones jump)
+    }
 }
 
 // 0x005114F0

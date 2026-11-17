@@ -29,6 +29,15 @@ bool take_cut();
 // one - a frame drawn after the count changed has no motion from before it.
 uint64_t cuts();
 
+// (added for hosts that draw the skater between ticks themselves: thug2-headless) The local skater put somewhere by
+// the game outside its motion this tick: teleported or respawned (GameEntity::mark_jumped_ahead), or placed by a wall
+// plant (backed off the wall to wait for a late press, put back for one, set off the wall turned to its new way), turned
+// round at once (rolling backwards, a turn-around) or its animations mirrored at once (a flip). Not a cut: nothing else
+// (the camera, the motion blur) is told. A host draws nothing blended across a change in the count.
+void note_skater_placed();
+// The skater's placements so far.
+uint64_t skater_placements();
+
 // [Graphics] max_fps and present_mode, read from the ini (at start-up with the graphics options, and again when the
 // Options screen changes one).
 void read_settings();

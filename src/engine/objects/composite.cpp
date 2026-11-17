@@ -19,6 +19,7 @@
 #include "engine/script/cscript.h"
 #include "engine/script/host.h"
 #include "engine/sys/stopwatch.h"
+#include "engine/sys/frame_blend.h"
 #include "engine/script/nodes.h"
 #include "engine/script/param_struct.h"
 #include "engine/objects/car_physics.h"
@@ -324,6 +325,9 @@ void GameEntity::hold_off(bool suspend)
 void GameEntity::mark_jumped_ahead(bool teleport_components)
 {
     composite_flags_ |= kCompositeFlagTeleported;
+    if (is_local_skater() != 0U) {
+        frame_blend::note_skater_placed(); // (not original: a host drawing between ticks blends nothing across it)
+    }
     if (teleport_components) {
         for (ObjectModule* component = attached_modules_; component; component = component->following()) {
             component->jump_to();

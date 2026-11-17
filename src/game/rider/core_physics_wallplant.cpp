@@ -22,6 +22,7 @@
 #include "game/rider/tagging.h"
 #include "game/rider/thaw_bmx.h"
 #include "game/rider/trick_component.h"
+#include "engine/sys/frame_blend.h"
 #include "engine/sys/game_clock.h"
 #include "engine/objects/trigger_events.h"
 #include "game/rider/physics_control.h"
@@ -81,6 +82,15 @@ constexpr float kFromWall = 0.1F;                              // (0x3DCCCCCD)
 constexpr const char* kLateWallplantText = "late wallplant\n"; // "late wallplant\n"
 
 
+
+// Not original: the local skater placed outside its motion (frame_blend::note_skater_placed: a host drawing between ticks
+// blends nothing across it).
+void note_placed_skater(SkaterPhysicsModule* physics)
+{
+    if (object_of(physics)->is_local_skater() != 0U) {
+        frame_blend::note_skater_placed();
+    }
+}
 
 } // namespace
 
@@ -172,6 +182,7 @@ bool SkaterPhysicsModule::air_plant_allowed(bool late, bool check_only)
         position.w = w + position.w;
         position.x = static_cast<float>((static_cast<double>(back.x) * kBackOff) + position.x);
         position.y = y + position.y;
+        note_placed_skater(this); // (not original: frame_blend::note_skater_placed)
         return false;
     }
     if (late) {
@@ -179,6 +190,7 @@ bool SkaterPhysicsModule::air_plant_allowed(bool late, bool check_only)
         debug::printf(kLateWallplantText);
         entity()->vel() = late_wallplant_.velocity;
         entity()->at_point() = late_wallplant_.pos;
+        note_placed_skater(this); // (not original, as above)
         objects::GameEntity* skater = object_of(this);
         const maths::Vec4& position = skater->at_point();
         const maths::Vec4& old = skater->old_pos();
@@ -354,6 +366,7 @@ bool SkaterPhysicsModule::wall_plant(bool late, bool check_only, bool walking)
     object = object_of(this);
     core::at(object->basis_frame().row, 0) = maths::cross_vec(core::at(object->basis_frame().row, 1), core::at(object->basis_frame().row, 2));
     ground_.display_matrix = entity()->basis_frame();
+    note_placed_skater(this); // (not original, as above: off the wall and turned to its new way at once)
     wallplant_.time = get_now();
     object_of(this)->post_own_event(kWallplant, nullptr);
     static_cast<objects::MoveExecutor*>(trick_)->pass_to_trick_objects(feelers_.feeler.hit().object_checksum_);

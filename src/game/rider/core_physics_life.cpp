@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "base/core/dbg.h"
+#include "engine/sys/frame_blend.h"
 #include "base/maths/mat4.h"
 #include "base/maths/vec4.h"
 #include "engine/objects/control_pad.h"
@@ -247,6 +248,9 @@ void SkaterPhysicsModule::turn_around()
     maths::Vec4& right = core::at(entity()->basis_frame().row, 0);
     right = maths::Vec4(-right.x, -right.y, -right.z, -right.w);
     ground_.display_matrix = entity()->basis_frame();
+    if (object->is_local_skater() != 0U) {
+        frame_blend::note_skater_placed(); // (not original: turned round at once - nothing blended across it)
+    }
     rail_backwards_ = (rail_backwards_ != 0U) ? 0 : 1;
 }
 
