@@ -323,12 +323,23 @@ bool SkaterPhysicsModule::wall_plant(bool late, bool check_only, bool walking)
     }
     if (!walking) {
         // Placed Physics_Wallplant_Distance_From_Wall off it (or 0.1 off anything nearer).
-        const maths::Vec4& point = feelers_.feeler.contact_pos();
-        const maths::Vec4& normal = feelers_.feeler.surface_dir();
+        // (not original: copies - the original's references into the feeler, so the re-cast's hit replaced them)
+        const maths::Vec4 point = feelers_.feeler.contact_pos();
+        const maths::Vec4 normal = feelers_.feeler.surface_dir();
         feeler->line().start = point;
         feeler->line().end = point + script::fetch_float(kDistanceFromWall) * normal;
-        if (feeler->get_hit_shape(true, false) != 0) {
-            entity()->at_point() = point + kFromWall * normal;
+        int hit = feeler->get_hit_shape(true, false);
+        // NOT ORIGINAL: hosts (thug2-headless) feed a two-sided wall as two faces in one plane, one facing each way.
+        // The re-cast starts on the plane, so it can hit the back one at once (whenever the hit rounds onto or behind
+        // the plane), and that one's normal points through the wall: the skater went 0.1 behind the wall. A hit facing
+        // against the wall and within 0.1 of its plane is passed over and the re-cast made again from 0.1 out.
+        if (hit != 0 && maths::dot_vec(feeler->surface_dir(), normal) < 0.0F &&
+            maths::dot_vec(feeler->contact_pos() - point, normal) < kFromWall) {
+            feeler->line().start = point + kFromWall * normal;
+            hit = feeler->get_hit_shape(true, false);
+        }
+        if (hit != 0) {
+            entity()->at_point() = feeler->contact_pos() + kFromWall * feeler->surface_dir();
         } else {
             entity()->at_point() = feeler->line().end;
         }
